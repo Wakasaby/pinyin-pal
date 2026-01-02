@@ -86,9 +86,8 @@ IMPORTANT:
             });
             
             if (result.characters && result.characters.length > 0) {
-                setResults(result.characters);
                 saveToHistory(result.characters);
-                toast.success(`Found ${result.characters.length} Chinese character${result.characters.length > 1 ? 's' : ''}`);
+                toast.success(`Found ${result.characters.length} Chinese character${result.characters.length > 1 ? 's' : ''}. Check recent scans below.`);
             } else {
                 toast.info('No Chinese characters detected in the image');
             }
