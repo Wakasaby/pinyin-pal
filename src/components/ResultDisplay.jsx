@@ -32,15 +32,15 @@ export default function ResultDisplay({ results, translation, onClear }) {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={copyToClipboard}
-                        className="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white/90 transition-colors"
+                        className="p-2 min-w-[44px] min-h-[44px] rounded-full hover:bg-white/10 active:bg-white/20 text-white/60 hover:text-white/90 transition-colors flex items-center justify-center"
                     >
-                        <Copy className="w-4 h-4" />
+                        <Copy className="w-5 h-5" />
                     </button>
                     <button
                         onClick={onClear}
-                        className="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white/90 transition-colors"
+                        className="p-2 min-w-[44px] min-h-[44px] rounded-full hover:bg-white/10 active:bg-white/20 text-white/60 hover:text-white/90 transition-colors flex items-center justify-center"
                     >
-                        <X className="w-4 h-4" />
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
             </div>
@@ -87,7 +87,7 @@ export default function ResultDisplay({ results, translation, onClear }) {
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => speak(results.map(r => r.character).join(''))}
-                            className="flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-colors text-sm font-medium"
+                            className="flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-full bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 active:bg-orange-500/40 transition-colors text-sm font-medium"
                         >
                             <Volume2 className="w-4 h-4" />
                             Listen to all

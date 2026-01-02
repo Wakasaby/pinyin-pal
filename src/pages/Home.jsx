@@ -111,14 +111,14 @@ IMPORTANT:
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+        <div className="min-h-screen min-h-[100dvh] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
             {/* Ambient background */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-1/4 -left-32 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
                 <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
             </div>
             
-            <div className="relative z-10 max-w-lg mx-auto px-4 py-8 pb-24">
+            <div className="relative z-10 max-w-lg mx-auto px-4 py-8 pb-24 safe-bottom">
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}

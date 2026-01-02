@@ -27,7 +27,8 @@ export default function CameraView({ onCapture, isProcessing }) {
                     facingMode: facing,
                     width: { ideal: 1920 },
                     height: { ideal: 1080 }
-                }
+                },
+                audio: false
             });
             
             if (videoRef.current) {
@@ -107,7 +108,7 @@ export default function CameraView({ onCapture, isProcessing }) {
                     <span className="text-white/70 text-sm font-medium">Frame Height</span>
                     <button
                         onClick={resetScanArea}
-                        className="text-orange-400/70 hover:text-orange-400 text-xs flex items-center gap-1 transition-colors"
+                        className="text-orange-400/70 hover:text-orange-400 active:text-orange-300 text-xs flex items-center gap-1 transition-colors min-h-[44px] px-2"
                     >
                         <Maximize2 className="w-3 h-3" />
                         Reset
@@ -116,9 +117,9 @@ export default function CameraView({ onCapture, isProcessing }) {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => adjustScanArea(-5)}
-                        className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white/90 transition-colors"
+                        className="p-2 min-w-[44px] min-h-[44px] rounded-lg bg-white/5 hover:bg-white/10 active:bg-white/20 text-white/60 hover:text-white/90 transition-colors flex items-center justify-center"
                     >
-                        <ZoomOut className="w-4 h-4" />
+                        <ZoomOut className="w-5 h-5" />
                     </button>
                     <Slider
                         value={[scanAreaHeight]}
@@ -130,9 +131,9 @@ export default function CameraView({ onCapture, isProcessing }) {
                     />
                     <button
                         onClick={() => adjustScanArea(5)}
-                        className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white/90 transition-colors"
+                        className="p-2 min-w-[44px] min-h-[44px] rounded-lg bg-white/5 hover:bg-white/10 active:bg-white/20 text-white/60 hover:text-white/90 transition-colors flex items-center justify-center"
                     >
-                        <ZoomIn className="w-4 h-4" />
+                        <ZoomIn className="w-5 h-5" />
                     </button>
                 </div>
                 <div className="mt-2 text-center">
@@ -153,8 +154,9 @@ export default function CameraView({ onCapture, isProcessing }) {
                         autoPlay
                         playsInline
                         muted
+                        webkit-playsinline="true"
                         onLoadedMetadata={() => setIsLoading(false)}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover touch-none"
                     />
                     
                     {isLoading && (
@@ -225,17 +227,17 @@ export default function CameraView({ onCapture, isProcessing }) {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={toggleCamera}
-                    className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/80 hover:bg-white/20 transition-colors"
+                    className="w-14 h-14 min-w-[44px] min-h-[44px] rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/80 hover:bg-white/20 transition-colors active:bg-white/30"
                 >
-                    <SwitchCamera className="w-5 h-5" />
+                    <SwitchCamera className="w-6 h-6" />
                 </motion.button>
-                
+
                 <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={handleCapture}
                     disabled={isProcessing || isLoading || error}
-                    className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-20 h-20 min-w-[44px] min-h-[44px] rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
                 >
                     {isProcessing ? (
                         <Loader2 className="w-8 h-8 text-white animate-spin" />
@@ -243,8 +245,8 @@ export default function CameraView({ onCapture, isProcessing }) {
                         <Camera className="w-8 h-8 text-white" />
                     )}
                 </motion.button>
-                
-                <div className="w-12 h-12" /> {/* Spacer for balance */}
+
+                <div className="w-14 h-14" /> {/* Spacer for balance */}
             </div>
             </div>
         </div>

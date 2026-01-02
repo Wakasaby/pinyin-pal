@@ -27,7 +27,7 @@ export default function ScanHistory({ history, onSelect, onClear }) {
                 </div>
                 <button
                     onClick={onClear}
-                    className="text-white/40 hover:text-white/70 text-xs flex items-center gap-1 transition-colors"
+                    className="text-white/40 hover:text-white/70 active:text-white text-xs flex items-center gap-1 transition-colors min-h-[44px] px-2"
                 >
                     <Trash2 className="w-3 h-3" />
                     Clear all
@@ -62,9 +62,9 @@ export default function ScanHistory({ history, onSelect, onClear }) {
                                 <div className="flex items-center gap-2">
                                 <button
                                     onClick={(e) => copyCharacters(e, item)}
-                                    className="p-2 rounded-lg hover:bg-white/10 text-white/40 hover:text-white/70 transition-colors"
+                                    className="p-2 min-w-[44px] min-h-[44px] rounded-lg hover:bg-white/10 active:bg-white/20 text-white/40 hover:text-white/70 transition-colors flex items-center justify-center"
                                 >
-                                    <Copy className="w-4 h-4" />
+                                    <Copy className="w-5 h-5" />
                                 </button>
                                 <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/50 transition-colors" />
                                 </div>
