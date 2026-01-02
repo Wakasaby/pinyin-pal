@@ -88,7 +88,7 @@ export default function CameraView({ onCapture, isProcessing }) {
     };
 
     const adjustScanArea = (delta) => {
-        setScanAreaHeight(prev => Math.max(15, Math.min(60, prev + delta)));
+        setScanAreaHeight(prev => Math.max(15, Math.min(100, prev + delta)));
     };
 
     const resetScanArea = () => {
@@ -124,7 +124,7 @@ export default function CameraView({ onCapture, isProcessing }) {
                         value={[scanAreaHeight]}
                         onValueChange={(value) => setScanAreaHeight(value[0])}
                         min={15}
-                        max={60}
+                        max={100}
                         step={5}
                         className="flex-1"
                     />
