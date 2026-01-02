@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Info } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import CameraView from '@/components/CameraView';
 import ResultDisplay from '@/components/ResultDisplay';
 import ScanHistory from '@/components/ScanHistory';
+import AnnotatedImage from '@/components/AnnotatedImage';
 
 export default function Home() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [results, setResults] = useState([]);
     const [history, setHistory] = useState([]);
+    const [capturedImage, setCapturedImage] = useState(null);
+    const [showAnnotated, setShowAnnotated] = useState(false);
 
     useEffect(() => {
         const saved = localStorage.getItem('pinyinHistory');
@@ -38,6 +41,7 @@ export default function Home() {
     const handleCapture = async (imageData) => {
         setIsProcessing(true);
         setResults([]);
+        setCapturedImage(imageData);
         
         try {
             // Convert base64 to blob for upload
@@ -87,9 +91,11 @@ IMPORTANT:
             if (result.characters && result.characters.length > 0) {
                 setResults(result.characters);
                 saveToHistory(result.characters);
+                setShowAnnotated(true);
                 toast.success(`Found ${result.characters.length} Chinese character${result.characters.length > 1 ? 's' : ''}`);
             } else {
                 toast.info('No Chinese characters detected in the image');
+                setCapturedImage(null);
             }
         } catch (error) {
             console.error('OCR Error:', error);
@@ -101,6 +107,18 @@ IMPORTANT:
 
     const clearResults = () => {
         setResults([]);
+        setCapturedImage(null);
+        setShowAnnotated(false);
+    };
+
+    const handleCloseAnnotated = () => {
+        setShowAnnotated(false);
+    };
+
+    const handleRetry = () => {
+        setShowAnnotated(false);
+        setCapturedImage(null);
+        setResults([]);
     };
 
     const clearHistory = () => {
@@ -110,7 +128,19 @@ IMPORTANT:
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+        <>
+            <AnimatePresence>
+                {showAnnotated && capturedImage && results.length > 0 && (
+                    <AnnotatedImage
+                        imageData={capturedImage}
+                        results={results}
+                        onClose={handleCloseAnnotated}
+                        onRetry={handleRetry}
+                    />
+                )}
+            </AnimatePresence>
+
+            <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
             {/* Ambient background */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-1/4 -left-32 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
@@ -178,5 +208,6 @@ IMPORTANT:
                 />
             </div>
         </div>
+        </>
     );
 }
