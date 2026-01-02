@@ -1,10 +1,18 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Trash2, ChevronRight } from 'lucide-react';
+import { Clock, Trash2, ChevronRight, Copy } from 'lucide-react';
 import moment from 'moment';
+import { toast } from 'sonner';
 
 export default function ScanHistory({ history, onSelect, onClear }) {
     if (!history || history.length === 0) return null;
+
+    const copyCharacters = (e, item) => {
+        e.stopPropagation();
+        const text = item.results.map(r => r.character).join('');
+        navigator.clipboard.writeText(text);
+        toast.success('Characters copied');
+    };
 
     return (
         <motion.div
@@ -50,9 +58,17 @@ export default function ScanHistory({ history, onSelect, onClear }) {
                                         {moment(item.timestamp).fromNow()}
                                     </div>
                                 </div>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/50 transition-colors" />
-                        </motion.button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                <button
+                                    onClick={(e) => copyCharacters(e, item)}
+                                    className="p-2 rounded-lg hover:bg-white/10 text-white/40 hover:text-white/70 transition-colors"
+                                >
+                                    <Copy className="w-4 h-4" />
+                                </button>
+                                <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/50 transition-colors" />
+                                </div>
+                                </motion.button>
                     ))}
                 </AnimatePresence>
             </div>
