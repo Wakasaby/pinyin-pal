@@ -11,7 +11,7 @@ export default function CameraView({ onCapture, isProcessing }) {
     const [facingMode, setFacingMode] = useState('environment');
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [scanAreaSize, setScanAreaSize] = useState(80); // Percentage of the view
+    const [scanAreaHeight, setScanAreaHeight] = useState(30); // Percentage of height
 
     const startCamera = async (facing) => {
         setIsLoading(true);
@@ -59,12 +59,13 @@ export default function CameraView({ onCapture, isProcessing }) {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         
-        // Calculate the crop area based on scanAreaSize
+        // Calculate the crop area - wide rectangle (full width, adjustable height)
         const videoWidth = video.videoWidth;
         const videoHeight = video.videoHeight;
-        const cropWidth = videoWidth * (scanAreaSize / 100);
-        const cropHeight = videoHeight * (scanAreaSize / 100);
-        const cropX = (videoWidth - cropWidth) / 2;
+        const horizontalPadding = videoWidth * 0.05; // 5% padding on sides
+        const cropWidth = videoWidth - (horizontalPadding * 2);
+        const cropHeight = videoHeight * (scanAreaHeight / 100);
+        const cropX = horizontalPadding;
         const cropY = (videoHeight - cropHeight) / 2;
         
         // Set canvas to cropped size
@@ -87,11 +88,11 @@ export default function CameraView({ onCapture, isProcessing }) {
     };
 
     const adjustScanArea = (delta) => {
-        setScanAreaSize(prev => Math.max(30, Math.min(100, prev + delta)));
+        setScanAreaHeight(prev => Math.max(15, Math.min(60, prev + delta)));
     };
 
     const resetScanArea = () => {
-        setScanAreaSize(80);
+        setScanAreaHeight(30);
     };
 
     return (
@@ -103,7 +104,7 @@ export default function CameraView({ onCapture, isProcessing }) {
                 className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-4"
             >
                 <div className="flex items-center justify-between mb-3">
-                    <span className="text-white/70 text-sm font-medium">Scan Area</span>
+                    <span className="text-white/70 text-sm font-medium">Frame Height</span>
                     <button
                         onClick={resetScanArea}
                         className="text-orange-400/70 hover:text-orange-400 text-xs flex items-center gap-1 transition-colors"
@@ -114,29 +115,29 @@ export default function CameraView({ onCapture, isProcessing }) {
                 </div>
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => adjustScanArea(-10)}
+                        onClick={() => adjustScanArea(-5)}
                         className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white/90 transition-colors"
                     >
                         <ZoomOut className="w-4 h-4" />
                     </button>
                     <Slider
-                        value={[scanAreaSize]}
-                        onValueChange={(value) => setScanAreaSize(value[0])}
-                        min={30}
-                        max={100}
+                        value={[scanAreaHeight]}
+                        onValueChange={(value) => setScanAreaHeight(value[0])}
+                        min={15}
+                        max={60}
                         step={5}
                         className="flex-1"
                     />
                     <button
-                        onClick={() => adjustScanArea(10)}
+                        onClick={() => adjustScanArea(5)}
                         className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white/90 transition-colors"
                     >
                         <ZoomIn className="w-4 h-4" />
                     </button>
                 </div>
                 <div className="mt-2 text-center">
-                    <span className="text-orange-400 text-xs font-medium">{scanAreaSize}%</span>
-                    <span className="text-white/40 text-xs ml-1">coverage</span>
+                    <span className="text-orange-400 text-xs font-medium">{scanAreaHeight}%</span>
+                    <span className="text-white/40 text-xs ml-1">of screen height</span>
                 </div>
             </motion.div>
 
@@ -162,41 +163,33 @@ export default function CameraView({ onCapture, isProcessing }) {
                         </div>
                     )}
                     
-                    {/* Scan overlay with dynamic sizing */}
+                    {/* Scan overlay with wide rectangle */}
                     <div className="absolute inset-0 pointer-events-none">
-                        {/* Darkened areas outside scan zone */}
+                        {/* Darkened areas outside scan zone - horizontal letterbox */}
                         <div 
                             className="absolute inset-0 transition-all duration-300"
                             style={{
                                 background: `
                                     linear-gradient(to bottom,
-                                        rgba(0,0,0,0.6) 0%,
-                                        rgba(0,0,0,0.6) ${(100 - scanAreaSize) / 2}%,
-                                        transparent ${(100 - scanAreaSize) / 2}%,
-                                        transparent ${50 + scanAreaSize / 2}%,
-                                        rgba(0,0,0,0.6) ${50 + scanAreaSize / 2}%,
-                                        rgba(0,0,0,0.6) 100%
-                                    ),
-                                    linear-gradient(to right,
-                                        rgba(0,0,0,0.6) 0%,
-                                        rgba(0,0,0,0.6) ${(100 - scanAreaSize) / 2}%,
-                                        transparent ${(100 - scanAreaSize) / 2}%,
-                                        transparent ${50 + scanAreaSize / 2}%,
-                                        rgba(0,0,0,0.6) ${50 + scanAreaSize / 2}%,
-                                        rgba(0,0,0,0.6) 100%
+                                        rgba(0,0,0,0.7) 0%,
+                                        rgba(0,0,0,0.7) ${(100 - scanAreaHeight) / 2}%,
+                                        transparent ${(100 - scanAreaHeight) / 2}%,
+                                        transparent ${50 + scanAreaHeight / 2}%,
+                                        rgba(0,0,0,0.7) ${50 + scanAreaHeight / 2}%,
+                                        rgba(0,0,0,0.7) 100%
                                     )
                                 `
                             }}
                         />
                         
-                        {/* Active scan frame */}
+                        {/* Active scan frame - wide rectangle */}
                         <motion.div 
-                            className="absolute border-2 border-orange-400/60 rounded-2xl transition-all duration-300"
+                            className="absolute border-2 border-orange-400/60 rounded-xl transition-all duration-300"
                             style={{
-                                left: `${(100 - scanAreaSize) / 2}%`,
-                                right: `${(100 - scanAreaSize) / 2}%`,
-                                top: `${(100 - scanAreaSize) / 2}%`,
-                                bottom: `${(100 - scanAreaSize) / 2}%`,
+                                left: '5%',
+                                right: '5%',
+                                top: `${(100 - scanAreaHeight) / 2}%`,
+                                bottom: `${(100 - scanAreaHeight) / 2}%`,
                             }}
                             animate={{
                                 boxShadow: [
@@ -211,11 +204,14 @@ export default function CameraView({ onCapture, isProcessing }) {
                                 ease: "easeInOut"
                             }}
                         >
-                            {/* Corner indicators */}
-                            <div className="absolute -top-1 -left-1 w-6 h-6 border-l-4 border-t-4 border-orange-400 rounded-tl-lg" />
-                            <div className="absolute -top-1 -right-1 w-6 h-6 border-r-4 border-t-4 border-orange-400 rounded-tr-lg" />
-                            <div className="absolute -bottom-1 -left-1 w-6 h-6 border-l-4 border-b-4 border-orange-400 rounded-bl-lg" />
-                            <div className="absolute -bottom-1 -right-1 w-6 h-6 border-r-4 border-b-4 border-orange-400 rounded-br-lg" />
+                            {/* Corner indicators - thinner for wide rectangle */}
+                            <div className="absolute -top-1 -left-1 w-8 h-5 border-l-4 border-t-4 border-orange-400 rounded-tl-lg" />
+                            <div className="absolute -top-1 -right-1 w-8 h-5 border-r-4 border-t-4 border-orange-400 rounded-tr-lg" />
+                            <div className="absolute -bottom-1 -left-1 w-8 h-5 border-l-4 border-b-4 border-orange-400 rounded-bl-lg" />
+                            <div className="absolute -bottom-1 -right-1 w-8 h-5 border-r-4 border-b-4 border-orange-400 rounded-br-lg" />
+                            
+                            {/* Center line indicator */}
+                            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-0.5 bg-orange-400/40" />
                         </motion.div>
                     </div>
                 </>
