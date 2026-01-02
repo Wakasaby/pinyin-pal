@@ -46,13 +46,48 @@ export default function CameraView({ onCapture, isProcessing }) {
         }
     };
 
-    const scanFrame = async () => {
-        if (!videoRef.current || !canvasRef.current || isProcessing) return;
+    useEffect(() => {
+        startCamera(facingMode);
         
-        // Throttle scans to every 3 seconds minimum
-        const now = Date.now();
-        if (now - lastScanTimeRef.current < 3000) return;
-        lastScanTimeRef.current = now;
+        return () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            if (scanIntervalRef.current) {
+                clearInterval(scanIntervalRef.current);
+            }
+        };
+    }, [facingMode, stream]);
+
+    const handleCapture = () => {
+        if (!videoRef.current || !canvasRef.current) return;
+        
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
+        
+        const imageData = canvas.toDataURL('image/jpeg', 0.9);
+        onCapture(imageData);
+    };
+
+    const toggleCamera = () => {
+        setRealtimeAnnotations([]);
+        setFacingMode(prev => prev === 'environment' ? 'user' : 'environment');
+    };
+
+    const toggleAnnotations = () => {
+        setShowAnnotations(prev => !prev);
+        if (showAnnotations) {
+            setRealtimeAnnotations([]);
+        }
+    };
+
+    const scanFrameManually = async () => {
+        if (!videoRef.current || !canvasRef.current || isProcessing || isScanning) return;
         
         setIsScanning(true);
         
@@ -102,73 +137,13 @@ Return only characters that are clearly visible. If no Chinese characters found,
             
             if (result.characters && result.characters.length > 0) {
                 setRealtimeAnnotations(result.characters);
+            } else {
+                setRealtimeAnnotations([]);
             }
         } catch (error) {
             console.error('Realtime scan error:', error);
         } finally {
             setIsScanning(false);
-        }
-    };
-
-    useEffect(() => {
-        startCamera(facingMode);
-        
-        return () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
-            if (scanIntervalRef.current) {
-                clearInterval(scanIntervalRef.current);
-            }
-        };
-    }, [facingMode]);
-
-    // Start continuous scanning when camera is ready
-    useEffect(() => {
-        if (!isLoading && !error && showAnnotations) {
-            // Initial scan after 1 second
-            const timeout = setTimeout(() => {
-                scanFrame();
-            }, 1000);
-            
-            // Set up interval for continuous scanning
-            scanIntervalRef.current = setInterval(() => {
-                scanFrame();
-            }, 4000); // Scan every 4 seconds
-            
-            return () => {
-                clearTimeout(timeout);
-                if (scanIntervalRef.current) {
-                    clearInterval(scanIntervalRef.current);
-                }
-            };
-        }
-    }, [isLoading, error, isProcessing, showAnnotations]);
-
-    const handleCapture = () => {
-        if (!videoRef.current || !canvasRef.current) return;
-        
-        const video = videoRef.current;
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0);
-        
-        const imageData = canvas.toDataURL('image/jpeg', 0.9);
-        onCapture(imageData);
-    };
-
-    const toggleCamera = () => {
-        setRealtimeAnnotations([]);
-        setFacingMode(prev => prev === 'environment' ? 'user' : 'environment');
-    };
-
-    const toggleAnnotations = () => {
-        setShowAnnotations(prev => !prev);
-        if (showAnnotations) {
-            setRealtimeAnnotations([]);
         }
     };
 
@@ -291,6 +266,23 @@ Return only characters that are clearly visible. If no Chinese characters found,
                         className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/80 hover:bg-white/20 transition-colors"
                     >
                         {showAnnotations ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                    </motion.button>
+                    
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={scanFrameManually}
+                        disabled={isScanning || isProcessing}
+                        className="px-4 py-2 rounded-full bg-orange-500/20 backdrop-blur-md border border-orange-400/30 flex items-center justify-center text-orange-400 hover:bg-orange-500/30 transition-colors text-sm font-medium disabled:opacity-50"
+                    >
+                        {isScanning ? (
+                            <>
+                                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                Scanning
+                            </>
+                        ) : (
+                            'Scan'
+                        )}
                     </motion.button>
                     
                     <motion.button
