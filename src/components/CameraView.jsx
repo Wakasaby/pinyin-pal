@@ -1,7 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Camera, SwitchCamera, Loader2 } from 'lucide-react';
+import { Camera, SwitchCamera, Loader2, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Slider } from "@/components/ui/slider";
 
 export default function CameraView({ onCapture, isProcessing }) {
     const videoRef = useRef(null);
@@ -10,6 +11,7 @@ export default function CameraView({ onCapture, isProcessing }) {
     const [facingMode, setFacingMode] = useState('environment');
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [scanAreaSize, setScanAreaSize] = useState(80); // Percentage of the view
 
     const startCamera = async (facing) => {
         setIsLoading(true);
@@ -57,9 +59,24 @@ export default function CameraView({ onCapture, isProcessing }) {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0);
+        // Calculate the crop area based on scanAreaSize
+        const videoWidth = video.videoWidth;
+        const videoHeight = video.videoHeight;
+        const cropWidth = videoWidth * (scanAreaSize / 100);
+        const cropHeight = videoHeight * (scanAreaSize / 100);
+        const cropX = (videoWidth - cropWidth) / 2;
+        const cropY = (videoHeight - cropHeight) / 2;
+        
+        // Set canvas to cropped size
+        canvas.width = cropWidth;
+        canvas.height = cropHeight;
+        
+        // Draw only the cropped portion
+        ctx.drawImage(
+            video,
+            cropX, cropY, cropWidth, cropHeight,  // Source rectangle
+            0, 0, cropWidth, cropHeight            // Destination rectangle
+        );
         
         const imageData = canvas.toDataURL('image/jpeg', 0.9);
         onCapture(imageData);
@@ -69,8 +86,61 @@ export default function CameraView({ onCapture, isProcessing }) {
         setFacingMode(prev => prev === 'environment' ? 'user' : 'environment');
     };
 
+    const adjustScanArea = (delta) => {
+        setScanAreaSize(prev => Math.max(30, Math.min(100, prev + delta)));
+    };
+
+    const resetScanArea = () => {
+        setScanAreaSize(80);
+    };
+
     return (
-        <div className="relative w-full aspect-[3/4] max-h-[70vh] rounded-3xl overflow-hidden bg-slate-900/50 backdrop-blur-sm border border-white/10">
+        <div className="space-y-4">
+            {/* Scan Area Controls */}
+            <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-4"
+            >
+                <div className="flex items-center justify-between mb-3">
+                    <span className="text-white/70 text-sm font-medium">Scan Area</span>
+                    <button
+                        onClick={resetScanArea}
+                        className="text-orange-400/70 hover:text-orange-400 text-xs flex items-center gap-1 transition-colors"
+                    >
+                        <Maximize2 className="w-3 h-3" />
+                        Reset
+                    </button>
+                </div>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => adjustScanArea(-10)}
+                        className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white/90 transition-colors"
+                    >
+                        <ZoomOut className="w-4 h-4" />
+                    </button>
+                    <Slider
+                        value={[scanAreaSize]}
+                        onValueChange={(value) => setScanAreaSize(value[0])}
+                        min={30}
+                        max={100}
+                        step={5}
+                        className="flex-1"
+                    />
+                    <button
+                        onClick={() => adjustScanArea(10)}
+                        className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white/90 transition-colors"
+                    >
+                        <ZoomIn className="w-4 h-4" />
+                    </button>
+                </div>
+                <div className="mt-2 text-center">
+                    <span className="text-orange-400 text-xs font-medium">{scanAreaSize}%</span>
+                    <span className="text-white/40 text-xs ml-1">coverage</span>
+                </div>
+            </motion.div>
+
+            <div className="relative w-full aspect-[3/4] max-h-[70vh] rounded-3xl overflow-hidden bg-slate-900/50 backdrop-blur-sm border border-white/10">
             {error ? (
                 <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
                     <div className="text-white/70 text-sm">{error}</div>
@@ -92,13 +162,61 @@ export default function CameraView({ onCapture, isProcessing }) {
                         </div>
                     )}
                     
-                    {/* Scan overlay */}
+                    {/* Scan overlay with dynamic sizing */}
                     <div className="absolute inset-0 pointer-events-none">
-                        <div className="absolute inset-8 border-2 border-white/20 rounded-2xl" />
-                        <div className="absolute top-8 left-8 w-8 h-8 border-l-2 border-t-2 border-orange-400 rounded-tl-lg" />
-                        <div className="absolute top-8 right-8 w-8 h-8 border-r-2 border-t-2 border-orange-400 rounded-tr-lg" />
-                        <div className="absolute bottom-8 left-8 w-8 h-8 border-l-2 border-b-2 border-orange-400 rounded-bl-lg" />
-                        <div className="absolute bottom-8 right-8 w-8 h-8 border-r-2 border-b-2 border-orange-400 rounded-br-lg" />
+                        {/* Darkened areas outside scan zone */}
+                        <div 
+                            className="absolute inset-0 transition-all duration-300"
+                            style={{
+                                background: `
+                                    linear-gradient(to bottom,
+                                        rgba(0,0,0,0.6) 0%,
+                                        rgba(0,0,0,0.6) ${(100 - scanAreaSize) / 2}%,
+                                        transparent ${(100 - scanAreaSize) / 2}%,
+                                        transparent ${50 + scanAreaSize / 2}%,
+                                        rgba(0,0,0,0.6) ${50 + scanAreaSize / 2}%,
+                                        rgba(0,0,0,0.6) 100%
+                                    ),
+                                    linear-gradient(to right,
+                                        rgba(0,0,0,0.6) 0%,
+                                        rgba(0,0,0,0.6) ${(100 - scanAreaSize) / 2}%,
+                                        transparent ${(100 - scanAreaSize) / 2}%,
+                                        transparent ${50 + scanAreaSize / 2}%,
+                                        rgba(0,0,0,0.6) ${50 + scanAreaSize / 2}%,
+                                        rgba(0,0,0,0.6) 100%
+                                    )
+                                `
+                            }}
+                        />
+                        
+                        {/* Active scan frame */}
+                        <motion.div 
+                            className="absolute border-2 border-orange-400/60 rounded-2xl transition-all duration-300"
+                            style={{
+                                left: `${(100 - scanAreaSize) / 2}%`,
+                                right: `${(100 - scanAreaSize) / 2}%`,
+                                top: `${(100 - scanAreaSize) / 2}%`,
+                                bottom: `${(100 - scanAreaSize) / 2}%`,
+                            }}
+                            animate={{
+                                boxShadow: [
+                                    '0 0 0px rgba(251, 146, 60, 0.3)',
+                                    '0 0 20px rgba(251, 146, 60, 0.5)',
+                                    '0 0 0px rgba(251, 146, 60, 0.3)',
+                                ]
+                            }}
+                            transition={{
+                                duration: 2,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }}
+                        >
+                            {/* Corner indicators */}
+                            <div className="absolute -top-1 -left-1 w-6 h-6 border-l-4 border-t-4 border-orange-400 rounded-tl-lg" />
+                            <div className="absolute -top-1 -right-1 w-6 h-6 border-r-4 border-t-4 border-orange-400 rounded-tr-lg" />
+                            <div className="absolute -bottom-1 -left-1 w-6 h-6 border-l-4 border-b-4 border-orange-400 rounded-bl-lg" />
+                            <div className="absolute -bottom-1 -right-1 w-6 h-6 border-r-4 border-b-4 border-orange-400 rounded-br-lg" />
+                        </motion.div>
                     </div>
                 </>
             )}
@@ -131,6 +249,7 @@ export default function CameraView({ onCapture, isProcessing }) {
                 </motion.button>
                 
                 <div className="w-12 h-12" /> {/* Spacer for balance */}
+            </div>
             </div>
         </div>
     );
