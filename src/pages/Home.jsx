@@ -130,10 +130,10 @@ IMPORTANT:
                         <span className="text-white/70 text-sm">AI-Powered OCR</span>
                     </div>
                     <h1 className="text-4xl font-light text-white tracking-tight mb-2">
-                        Pinyin <span className="text-orange-400">Reader</span>
+                        Pinyin <span className="text-orange-400">Pal</span>
                     </h1>
                     <p className="text-white/50 text-sm">
-                        Point your camera at Chinese text to see pinyin
+                        Point your camera at Chinese text, press the button to see the pinyin
                     </p>
                 </motion.div>
                 
