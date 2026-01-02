@@ -1,0 +1,96 @@
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Volume2, Copy, X } from 'lucide-react';
+import { toast } from 'sonner';
+
+export default function ResultDisplay({ results, onClear }) {
+    if (!results || results.length === 0) return null;
+
+    const copyToClipboard = () => {
+        const text = results.map(r => `${r.character} (${r.pinyin})`).join(' ');
+        navigator.clipboard.writeText(text);
+        toast.success('Copied to clipboard');
+    };
+
+    const speak = (text) => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'zh-CN';
+        speechSynthesis.speak(utterance);
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mt-6"
+        >
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="text-white/90 font-medium text-sm tracking-wide uppercase">
+                    Detected Characters
+                </h3>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={copyToClipboard}
+                        className="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white/90 transition-colors"
+                    >
+                        <Copy className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={onClear}
+                        className="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white/90 transition-colors"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-3">
+                <AnimatePresence>
+                    {results.map((item, index) => (
+                        <motion.div
+                            key={index}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: index * 0.05 }}
+                            onClick={() => speak(item.character)}
+                            className="group relative bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl p-4 border border-white/5 hover:border-orange-400/30 transition-all cursor-pointer hover:shadow-lg hover:shadow-orange-500/10"
+                        >
+                            <div className="text-4xl text-white mb-2 font-light tracking-wide">
+                                {item.character}
+                            </div>
+                            <div className="text-orange-400 text-lg font-medium">
+                                {item.pinyin}
+                            </div>
+                            {item.meaning && (
+                                <div className="text-white/50 text-xs mt-1">
+                                    {item.meaning}
+                                </div>
+                            )}
+                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Volume2 className="w-4 h-4 text-orange-400/60" />
+                            </div>
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+            </div>
+            
+            {results.length > 0 && (
+                <div className="mt-6 pt-4 border-t border-white/5">
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => speak(results.map(r => r.character).join(''))}
+                            className="flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-colors text-sm font-medium"
+                        >
+                            <Volume2 className="w-4 h-4" />
+                            Listen to all
+                        </button>
+                        <span className="text-white/40 text-sm">
+                            {results.length} character{results.length > 1 ? 's' : ''} detected
+                        </span>
+                    </div>
+                </div>
+            )}
+        </motion.div>
+    );
+}
