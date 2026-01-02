@@ -20,7 +20,7 @@ export default function Home() {
         }
     }, []);
 
-    const saveToHistory = (newResults) => {
+    const saveToHistory = (newResults, translation) => {
         if (!newResults || newResults.length === 0) return;
         
         const historyItem = {
@@ -28,6 +28,7 @@ export default function Home() {
             preview: newResults.slice(0, 5).map(r => r.character).join(''),
             pinyinPreview: newResults.slice(0, 5).map(r => r.pinyin).join(' '),
             results: newResults,
+            translation: translation,
             timestamp: new Date().toISOString()
         };
         
@@ -79,14 +80,15 @@ IMPORTANT:
                                 required: ["character", "pinyin"]
                             }
                         },
-                        detected_text: { type: "string", description: "Full text detected in image" }
+                        detected_text: { type: "string", description: "Full text detected in image" },
+                        translation: { type: "string", description: "English translation of the full phrase/text" }
                     },
                     required: ["characters"]
                 }
             });
             
             if (result.characters && result.characters.length > 0) {
-                saveToHistory(result.characters);
+                saveToHistory(result.characters, result.translation);
                 toast.success(`Found ${result.characters.length} Chinese character${result.characters.length > 1 ? 's' : ''}. Check recent scans below.`);
             } else {
                 toast.info('No Chinese characters detected in the image');
@@ -179,14 +181,15 @@ IMPORTANT:
                 
                 {/* Results */}
                 <ResultDisplay 
-                    results={results} 
+                    results={Array.isArray(results) ? results : results.results}
+                    translation={results.translation}
                     onClear={clearResults}
                 />
                 
                 {/* History */}
                 <ScanHistory 
                     history={history}
-                    onSelect={setResults}
+                    onSelect={(item) => setResults(item)}
                     onClear={clearHistory}
                 />
             </div>

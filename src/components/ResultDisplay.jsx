@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2, Copy, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function ResultDisplay({ results, onClear }) {
+export default function ResultDisplay({ results, translation, onClear }) {
     if (!results || results.length === 0) return null;
 
     const copyToClipboard = () => {
@@ -74,7 +74,14 @@ export default function ResultDisplay({ results, onClear }) {
                     ))}
                 </AnimatePresence>
             </div>
-            
+
+            {translation && (
+                <div className="mt-6 pt-4 border-t border-white/5">
+                    <div className="text-white/40 text-xs uppercase tracking-wide mb-2">Full Translation</div>
+                    <div className="text-white/80 text-sm leading-relaxed">{translation}</div>
+                </div>
+            )}
+
             {results.length > 0 && (
                 <div className="mt-6 pt-4 border-t border-white/5">
                     <div className="flex items-center gap-3">

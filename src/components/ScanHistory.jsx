@@ -43,7 +43,7 @@ export default function ScanHistory({ history, onSelect, onClear }) {
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 20 }}
                             transition={{ delay: index * 0.05 }}
-                            onClick={() => onSelect(item.results)}
+                            onClick={() => onSelect(item)}
                             className="w-full flex items-center justify-between p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all group"
                         >
                             <div className="flex items-center gap-4">
