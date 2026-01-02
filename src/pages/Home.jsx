@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import CameraView from '@/components/CameraView';
 import ResultDisplay from '@/components/ResultDisplay';
 import ScanHistory from '@/components/ScanHistory';
+import UploadButton from '@/components/UploadButton';
 
 export default function Home() {
     const [isProcessing, setIsProcessing] = useState(false);
@@ -144,6 +145,19 @@ IMPORTANT:
                 >
                     <CameraView 
                         onCapture={handleCapture} 
+                        isProcessing={isProcessing}
+                    />
+                </motion.div>
+
+                {/* Upload Option */}
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="mt-4"
+                >
+                    <UploadButton 
+                        onUpload={handleCapture}
                         isProcessing={isProcessing}
                     />
                 </motion.div>
