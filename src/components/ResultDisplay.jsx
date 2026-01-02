@@ -81,23 +81,6 @@ export default function ResultDisplay({ results, translation, onClear }) {
                     <div className="text-white/80 text-sm leading-relaxed">{translation}</div>
                 </div>
             )}
-
-            {results.length > 0 && (
-                <div className="mt-6 pt-4 border-t border-white/5">
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => speak(results.map(r => r.character).join(''))}
-                            className="flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-full bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 active:bg-orange-500/40 transition-colors text-sm font-medium"
-                        >
-                            <Volume2 className="w-4 h-4" />
-                            Listen to all
-                        </button>
-                        <span className="text-white/40 text-sm">
-                            {results.length} character{results.length > 1 ? 's' : ''} detected
-                        </span>
-                    </div>
-                </div>
-            )}
-        </motion.div>
+            </motion.div>
     );
 }
